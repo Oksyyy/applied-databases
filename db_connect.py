@@ -1,5 +1,5 @@
 import pymysql
-
+print("Connecting to database...")
 conn = None
 
 def connect():
