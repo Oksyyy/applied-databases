@@ -5,20 +5,31 @@ conn = None
 def connect():
     global conn
     conn = pymysql.connect(host="localhost",
-                            user="root",
-                            password="root",
-                            db="appdbproj",
-                            coursorclass=pymysql.coursors.DictCursor
-                            )
+                        user="root",
+                        password="root",
+                        db="appdbproj",
+                        cursorclass=pymysql.cursors.DictCursor
+                        )
+
+def close_connection():
+    global conn
+    if conn:
+        conn.close()
+        conn = None
+
+def view_speakers_sessions(speaker_name):
+    global conn
     
-def view_speakers_sessions():
-    if (not conn):
-        connect();
+    if conn is None:
+        connect()
 
-    query = "select * from table"
+    query = """select speakerName, sessionTitle, roomName
+    from session s 
+    join room r on s.roomId = r.roomId
+    where speakerName like %s
+    order by speakerName;"""
 
-    with conn:
-        coursor = conn.coursor()
-        coursor.execute(query)
-        x = coursor.fetchall()
-        print(x) 
+    with conn.cursor() as cursor:
+        cursor.execute(query,(f"%{speaker_name}%",))
+        results = cursor.fetchall()
+        return results
