@@ -32,7 +32,15 @@ def main(): # create a function to dysplay menu options for a user to pick and e
                     print(f"{speakers['speakerName']} | {speakers['sessionTitle']} | {speakers['roomName']}")
 
         elif choice == '2':
-            db_connect.view_attendees_by_company()
+            while True:
+                company_id = input("Enter company ID : ")
+                if company_id.isdigit() and int(company_id) > 0:
+                    company_id = int(company_id)
+                    break
+            company, attendees = db_connect.view_attendees_by_company(company_id)
+            print(f"{company['companyName']} Attendees")
+            for attendee in attendees:
+                print(f"{attendee['attendeeName']} | {attendee['attendeeDOB']} | {attendee['sessionTitle']} | {attendee['speakerName']} | {attendee['sessionDate']} | {attendee['roomName']}")
 
         elif choice == '3':
             db_connect.add_attendee()
