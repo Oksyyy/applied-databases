@@ -34,8 +34,18 @@ def main(): # create a function to dysplay menu options for a user to pick and e
         elif choice == '2':
             while True:
                 company_id = input("Enter company ID : ")
+
                 if company_id.isdigit() and int(company_id) > 0:
-                    company_id = int(company_id)
+                    if not db_connect.check_company_id_exists(int(company_id)):
+                        print(f"Company with ID {company_id} doesn't exist.")
+                        continue
+
+                    company_data = db_connect.check_company_has_attendees(int(company_id))
+                    if company_data['attendeeCount'] == 0:
+                        print(f"{company_data['companyName']} Attendees")
+                        print(f"No attendees found for {company_data['companyName']}")
+                        continue
+                    
                     break
             company, attendees = db_connect.view_attendees_by_company(company_id)
             print(f"{company['companyName']} Attendees")

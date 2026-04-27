@@ -1,3 +1,5 @@
+from unittest import result
+
 import pymysql
 print("Connecting to database...")
 conn = None
@@ -34,7 +36,6 @@ def view_speakers_sessions(speaker_name):
         results = cursor.fetchall()
         return results
 
-
 def view_attendees_by_company(company_id):
     global conn
     
@@ -62,3 +63,35 @@ def view_attendees_by_company(company_id):
         attendees = cursor.fetchall()
 
     return company, attendees
+
+
+# Function to validate user input if the company ID exists in the database
+def check_company_id_exists(company_id):
+    global conn
+    
+    if conn is None:
+        connect()
+    
+    query = """select companyID, companyName from company where companyID = %s;"""
+
+    with conn.cursor() as cursor:
+        cursor.execute(query, (company_id,))
+        result = cursor.fetchone()
+        return result is not None
+
+
+# Function to check if a company has any attendees
+def check_company_has_attendees(company_id):
+    global conn
+
+    if conn is None:
+        connect()
+
+    query = """select companyName, count(a.attendeeID) as attendeeCount from company c 
+    left join attendee a on a.attendeeCompanyID = c.companyID
+    where c.companyID = %s;"""
+
+    with conn.cursor() as cursor:
+        cursor.execute(query, (company_id,))
+        result = cursor.fetchone()
+        return result
