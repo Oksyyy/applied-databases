@@ -1,3 +1,4 @@
+import datetime
 import db_connect
 
 def main(): # create a function to dysplay menu options for a user to pick and enter
@@ -53,7 +54,37 @@ def main(): # create a function to dysplay menu options for a user to pick and e
                 print(f"{attendee['attendeeName']} | {attendee['attendeeDOB']} | {attendee['sessionTitle']} | {attendee['speakerName']} | {attendee['sessionDate']} | {attendee['roomName']}")
 
         elif choice == '3':
-            db_connect.add_attendee()
+            print("Add New Attendee")
+            print("----------------")
+            try:
+                attendee_id = int(input("Attendee ID : "))
+                name = input("Name : ")
+                dob =  datetime.datetime.strptime(input("DOB : "), "%Y-%m-%d")
+                gender = input("Gender : ")
+                company_id = int(input("Company ID : "))
+
+                # Validate attendee exists
+                if db_connect.check_attendee_id_exists(attendee_id):
+                    print(f"*** ERROR *** Attendee ID: {attendee_id} already exists")
+                    return
+
+                # Validate gender input
+                elif gender not in ['Male', 'Female']:
+                    print("*** ERROR *** Gender must be Male/Female")
+                    return
+
+                # Validate company exists
+                elif not db_connect.check_company_id_exists(int(company_id)):
+                    print(f"*** ERROR *** Company ID: {company_id} does not exist")
+                    return
+
+                db_connect.add_attendee(attendee_id, name, dob, gender, company_id)
+                print(f"Attendee successfully added")
+
+            # Any other exceptions that may occur
+            except Exception as e:
+                print({e})
+                # print(f"An error occurred: {e}")
 
         elif choice == '4':
             db_connect.view_connected_attendees()

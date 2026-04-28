@@ -95,3 +95,28 @@ def check_company_has_attendees(company_id):
         cursor.execute(query, (company_id,))
         result = cursor.fetchone()
         return result
+    
+def add_attendee(attendee_id, name, dob, gender, company_id):
+    global conn
+
+    if conn is None:
+        connect()
+
+    query = """INSERT INTO attendee (attendeeID, attendeeName, attendeeDOB, attendeeCompanyID, attendeeGender) VALUES (%s, %s, %s, %s, %s);"""
+
+    with conn.cursor() as cursor:
+        cursor.execute(query, (attendee_id, name, dob, company_id, gender))
+        conn.commit()
+
+def check_attendee_id_exists(attendee_id):
+    global conn
+
+    if conn is None:
+        connect()
+
+    query = """select attendeeID from attendee where attendeeID = %s;"""
+
+    with conn.cursor() as cursor:
+        cursor.execute(query, (attendee_id,))
+        result = cursor.fetchone()
+        return result is not None
