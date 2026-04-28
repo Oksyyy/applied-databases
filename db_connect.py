@@ -103,10 +103,19 @@ def add_attendee(attendee_id, name, dob, gender, company_id):
         connect()
 
     query = """INSERT INTO attendee (attendeeID, attendeeName, attendeeDOB, attendeeCompanyID, attendeeGender) VALUES (%s, %s, %s, %s, %s);"""
-
-    with conn.cursor() as cursor:
-        cursor.execute(query, (attendee_id, name, dob, company_id, gender))
-        conn.commit()
+    
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(query, (attendee_id, name, dob, company_id, gender))
+            conn.commit()
+            return True
+    
+    except pymysql.err.DataError as e:
+        print(f"*** ERROR *** {e}")
+        return False
+    except pymysql.err.OperationalError as e:
+        print(f"*** ERROR *** {e}")
+        return False
 
 def check_attendee_id_exists(attendee_id):
     global conn
