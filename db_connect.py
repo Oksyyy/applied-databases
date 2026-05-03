@@ -129,3 +129,22 @@ def check_attendee_id_exists(attendee_id):
         cursor.execute(query, (attendee_id,))
         result = cursor.fetchone()
         return result is not None
+
+
+def get_attendee_names(attendee_id):
+    global conn
+
+    if conn is None:
+        connect()
+
+    query = """
+    select attendeeName 
+    from attendee where attendeeID = %s;""" 
+
+    with conn.cursor() as cursor:
+        cursor.execute(query, (attendee_id,))
+        results = cursor.fetchone()
+        if results:
+            return results['attendeeName']
+        else:
+            return results

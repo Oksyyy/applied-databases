@@ -1,5 +1,8 @@
 import datetime
+
+from sqlalchemy import values
 import db_connect
+import neo4j_connect
 
 def main(): # create a function to dysplay menu options for a user to pick and enter
     db_connect.connect()
@@ -82,7 +85,24 @@ def main(): # create a function to dysplay menu options for a user to pick and e
                 print(f"Attendee successfully added")
 
         elif choice == '4':
-            db_connect.view_connected_attendees()
+            attendee_id = int(input("\nEnter Attendee ID : "))
+            # Check if attendee exists in Neo4j
+            if not neo4j_connect.check_attendee_exists(attendee_id):
+                print("*** ERROR *** Attendee does not exist")
+                continue
+
+            print(f"Attendee Name: {db_connect.get_attendee_names(attendee_id)}")
+            print("------------------------------")
+            neo4j_connect.connect()
+            connected_ids = neo4j_connect.get_connected_attendees_list(attendee_id)
+            if (len(connected_ids) == 0):
+                print("No connections")
+            else:
+
+                print("These attendees are connected: ")
+                for attendee_id in connected_ids:
+                    name = db_connect.get_attendee_names(attendee_id)
+                    print(f"{attendee_id} | {name}")
 
         elif choice == '5':
             db_connect.add_attendee_connection()
