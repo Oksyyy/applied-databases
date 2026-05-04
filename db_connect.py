@@ -1,7 +1,5 @@
-from unittest import result
-
 import pymysql
-print("Connecting to database...")
+
 conn = None
 
 def connect():
@@ -87,9 +85,11 @@ def check_company_has_attendees(company_id):
     if conn is None:
         connect()
 
-    query = """select companyName, count(a.attendeeID) as attendeeCount from company c 
+    query = """select companyName, count(a.attendeeID) as attendeeCount 
+    from company c 
     left join attendee a on a.attendeeCompanyID = c.companyID
-    where c.companyID = %s;"""
+    where c.companyID = %s
+    group by c.companyName;"""
 
     with conn.cursor() as cursor:
         cursor.execute(query, (company_id,))
@@ -135,7 +135,7 @@ def check_attendee_id_exists(attendee_id):
         return result is not None
 
 
-def get_attendee_names(attendee_id):
+def get_attendee_name(attendee_id):
     global conn
 
     if conn is None:
@@ -159,16 +159,11 @@ def view_rooms():
     if conn is None:
         connect()
 
-    query = """select roomID, roomName, capacity from room;"""
+    query = """select roomID, roomName, capacity 
+    from room
+    order by capacity desc;"""
 
     with conn.cursor() as cursor:
         cursor.execute(query)
         results = cursor.fetchall()
         return results
-
-cached = None
-def get_cached_rooms():
-    global cached
-    if cached is None:
-        cached = view_rooms()
-    return cached
