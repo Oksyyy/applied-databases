@@ -37,9 +37,12 @@ def main(): # create a function to dysplay menu options for a user to pick and e
 
         elif choice == '2':
             while True:
-                company_id = input("Enter company ID : ")
+                try: 
+                    company_id = int(input("\nEnter company ID : "))
+                except ValueError:
+                    continue
 
-                if company_id.isdigit() and int(company_id) > 0:
+                if company_id > 0:
                     if not db_connect.check_company_id_exists(int(company_id)):
                         print(f"Company with ID {company_id} doesn't exist.")
                         continue
@@ -57,7 +60,7 @@ def main(): # create a function to dysplay menu options for a user to pick and e
                 print(f"{attendee['attendeeName']} | {attendee['attendeeDOB']} | {attendee['sessionTitle']} | {attendee['speakerName']} | {attendee['sessionDate']} | {attendee['roomName']}")
 
         elif choice == '3':
-            print("Add New Attendee")
+            print("\nAdd New Attendee")
             print("----------------")
             attendee_id = input("Attendee ID : ")
             name = input("Name : ")
@@ -68,33 +71,33 @@ def main(): # create a function to dysplay menu options for a user to pick and e
             # Validate attendee exists
             if db_connect.check_attendee_id_exists(attendee_id):
                 print(f"*** ERROR *** Attendee ID: {attendee_id} already exists")
-                return
+                continue
 
             # Validate gender input
             elif gender not in ['Male', 'Female']:
                 print("*** ERROR *** Gender must be Male/Female")
-                return
+                continue
 
             # Validate company exists
             elif not db_connect.check_company_id_exists(int(company_id)):
                 print(f"*** ERROR *** Company ID: {company_id} does not exist")
-                return
+                continue
 
             success = db_connect.add_attendee(attendee_id, name, dob, gender, company_id)
             if success:
-                print(f"Attendee successfully added")
+                print(f"Attendee successfully added\n")
 
         elif choice == '4':
             while True:
-                user_input = input("\nEnter Attendee ID : ")
-                # Check if input is a valid integer and positive
-                if not user_input.isdigit() or int(user_input) <= 0:
-                    print(f"*** ERROR *** Invalid attendee ID")
+                try:
+                    attendee_id = int(input("\nEnter Attendee ID : "))
+                except ValueError:
+                    print("*** ERROR *** Invalid attendee ID")
                     continue
-                
+                    
                 # Check if attendee exists in Neo4j
-                attendee_id = int(user_input)
-                if not neo4j_connect.check_attendee_exists(attendee_id):
+                attendee_id = int(attendee_id)
+                if not db_connect.check_attendee_id_exists(attendee_id):
                     print("*** ERROR *** Attendee does not exist")
                     continue
                 break
@@ -116,23 +119,16 @@ def main(): # create a function to dysplay menu options for a user to pick and e
             while True:
                 attendee_id_1 = input("\nEnter Attendee 1 ID : ")
                 attendee_id_2 = input("Enter Attendee 2 ID : ")
-
-                # Check if inputs are valid integers
-                if not attendee_id_1.isdigit() or not attendee_id_2.isdigit():
+                try:
+                    attendee_id_1 = int(attendee_id_1)
+                    attendee_id_2 = int(attendee_id_2)
+                except ValueError:
                     print("*** ERROR *** Attendee IDs must be numbers")
                     continue
-
-                attendee_id_1 = int(attendee_id_1)
-                attendee_id_2 = int(attendee_id_2)
                 
                 # Check if attendee IDs are the same
                 if attendee_id_1 == attendee_id_2:
                     print( "*** ERROR *** An attendee cannot connect to him/herself")
-                    continue
-
-                # Check if already connected
-                if neo4j_connect.check_connection_exists(attendee_id_1, attendee_id_2):
-                    print(f"*** ERROR *** These attendees are already connected")
                     continue
 
                 # Check exist in SQL database
@@ -141,7 +137,7 @@ def main(): # create a function to dysplay menu options for a user to pick and e
                     continue
 
                 if not db_connect.check_attendee_id_exists(attendee_id_2):
-                    print(f"*** ERROR *** One of both attendee IDs do not exist")
+                    print(f"*** ERROR *** One or both attendee IDs do not exist")
                     continue
 
                  # Add to Neo4j if missing
@@ -150,6 +146,11 @@ def main(): # create a function to dysplay menu options for a user to pick and e
 
                 if not neo4j_connect.check_attendee_exists(attendee_id_2):
                     neo4j_connect.add_attendee(attendee_id_2)
+                
+                # Check if already connected
+                if neo4j_connect.check_connection_exists(attendee_id_1, attendee_id_2):
+                    print(f"*** ERROR *** These attendees are already connected")
+                    continue
 
                 break
 

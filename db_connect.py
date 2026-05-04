@@ -102,14 +102,18 @@ def add_attendee(attendee_id, name, dob, gender, company_id):
     if conn is None:
         connect()
 
-    query = """INSERT INTO attendee (attendeeID, attendeeName, attendeeDOB, attendeeCompanyID, attendeeGender) VALUES (%s, %s, %s, %s, %s);"""
+    query = """insert into attendee (attendeeID, attendeeName, attendeeDOB, attendeeCompanyID, attendeeGender) 
+    values (%s, %s, %s, %s, %s);"""
     
+    # Database error handling for duplicate attendee ID, invalid data, and operational errors
     try:
         with conn.cursor() as cursor:
             cursor.execute(query, (attendee_id, name, dob, company_id, gender))
             conn.commit()
             return True
-    
+    except pymysql.err.IntegrityError as e:
+        print(f"*** ERROR *** Attendee ID: {attendee_id} already exists")
+        return False
     except pymysql.err.DataError as e:
         print(f"*** ERROR *** {e}")
         return False
@@ -161,3 +165,10 @@ def view_rooms():
         cursor.execute(query)
         results = cursor.fetchall()
         return results
+
+cached = None
+def get_cached_rooms():
+    global cached
+    if cached is None:
+        cached = view_rooms()
+    return cached
