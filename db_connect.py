@@ -148,3 +148,16 @@ def get_attendee_names(attendee_id):
             return results['attendeeName']
         else:
             return results
+        
+def view_rooms():
+    global conn
+
+    if conn is None:
+        connect()
+
+    query = """select roomID, roomName, capacity from room;"""
+
+    with conn.cursor() as cursor:
+        cursor.execute(query)
+        results = cursor.fetchall()
+        return results

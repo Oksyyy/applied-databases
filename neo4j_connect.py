@@ -47,3 +47,55 @@ def check_attendee_exists(attendee_id):
 
     with driver.session() as session:
         return session.execute_read(_attendee_exists, attendee_id)
+    
+def _connection_exists(tx, attendee_id_1, attendee_id_2):
+    query = """
+    MATCH (a:Attendee {AttendeeID: $attendee_id_1})-[r:CONNECTED_TO]-(b:Attendee {AttendeeID: $attendee_id_2})
+    RETURN count(r) AS count
+    """
+    result = tx.run(query, attendee_id_1=attendee_id_1, attendee_id_2=attendee_id_2).single()
+    return result["count"] > 0
+
+def check_connection_exists(attendee_id_1, attendee_id_2):
+    global driver
+
+    if driver is None:
+        connect()
+
+    with driver.session() as session:
+        return session.execute_read(_connection_exists, attendee_id_1, attendee_id_2)
+
+def _create_attendee(tx, attendee_id):
+    query = """
+    CREATE (a:Attendee {AttendeeID: $attendee_id})
+    """
+    tx.run(query, attendee_id=attendee_id)
+
+def add_attendee(attendee_id):
+    global driver
+
+    if driver is None:
+        connect()
+    
+    with driver.session() as session:
+        session.execute_write(_create_attendee, attendee_id)
+
+def _create_connection(tx, attendee1, attendee2):
+    query = """
+    MATCH (a:Attendee {AttendeeID: $attendee_id_1})
+    MATCH (b:Attendee {AttendeeID: $attendee_id_2})
+    CREATE (a)-[:CONNECTED_TO]->(b)
+    """
+    tx.run(query, attendee_id_1=attendee1, attendee_id_2=attendee2)
+
+
+def add_attendee_connection(attendee1, attendee2):
+    global driver
+
+    if driver is None:
+        connect()
+    
+    with driver.session() as session:
+        session.execute_write(_create_connection, attendee1, attendee2)
+
+    

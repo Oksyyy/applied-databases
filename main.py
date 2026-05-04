@@ -85,12 +85,20 @@ def main(): # create a function to dysplay menu options for a user to pick and e
                 print(f"Attendee successfully added")
 
         elif choice == '4':
-            attendee_id = int(input("\nEnter Attendee ID : "))
-            # Check if attendee exists in Neo4j
-            if not neo4j_connect.check_attendee_exists(attendee_id):
-                print("*** ERROR *** Attendee does not exist")
-                continue
-
+            while True:
+                user_input = input("\nEnter Attendee ID : ")
+                # Check if input is a valid integer and positive
+                if not user_input.isdigit() or int(user_input) <= 0:
+                    print(f"*** ERROR *** Invalid attendee ID")
+                    continue
+                
+                # Check if attendee exists in Neo4j
+                attendee_id = int(user_input)
+                if not neo4j_connect.check_attendee_exists(attendee_id):
+                    print("*** ERROR *** Attendee does not exist")
+                    continue
+                break
+            
             print(f"Attendee Name: {db_connect.get_attendee_names(attendee_id)}")
             print("------------------------------")
             neo4j_connect.connect()
@@ -105,10 +113,54 @@ def main(): # create a function to dysplay menu options for a user to pick and e
                     print(f"{attendee_id} | {name}")
 
         elif choice == '5':
-            db_connect.add_attendee_connection()
+            while True:
+                attendee_id_1 = input("\nEnter Attendee 1 ID : ")
+                attendee_id_2 = input("Enter Attendee 2 ID : ")
+
+                # Check if inputs are valid integers
+                if not attendee_id_1.isdigit() or not attendee_id_2.isdigit():
+                    print("*** ERROR *** Attendee IDs must be numbers")
+                    continue
+
+                attendee_id_1 = int(attendee_id_1)
+                attendee_id_2 = int(attendee_id_2)
+                
+                # Check if attendee IDs are the same
+                if attendee_id_1 == attendee_id_2:
+                    print( "*** ERROR *** An attendee cannot connect to him/herself")
+                    continue
+
+                # Check if already connected
+                if neo4j_connect.check_connection_exists(attendee_id_1, attendee_id_2):
+                    print(f"*** ERROR *** These attendees are already connected")
+                    continue
+
+                # Check exist in SQL database
+                if not db_connect.check_attendee_id_exists(attendee_id_1):
+                    print(f"*** ERROR *** One of both attendee IDs do not exist")
+                    continue
+
+                if not db_connect.check_attendee_id_exists(attendee_id_2):
+                    print(f"*** ERROR *** One of both attendee IDs do not exist")
+                    continue
+
+                 # Add to Neo4j if missing
+                if not neo4j_connect.check_attendee_exists(attendee_id_1):
+                    neo4j_connect.add_attendee(attendee_id_1)
+
+                if not neo4j_connect.check_attendee_exists(attendee_id_2):
+                    neo4j_connect.add_attendee(attendee_id_2)
+
+                break
+
+            neo4j_connect.add_attendee_connection(attendee_id_1, attendee_id_2)
+            print(f"Attendee {attendee_id_1} is now connected to Attendee {attendee_id_2}")
 
         elif choice == '6':
-            db_connect.view_rooms()
+            rooms = db_connect.view_rooms()
+            print("RoomID | Room Name | Capacity")
+            for room in rooms:
+                print(f"{room['roomID']} | {room['roomName']} | {room['capacity']}")
 
         elif choice != 'x':
             print("Please select either 1, 2, 3, 4, 5, or 6")
