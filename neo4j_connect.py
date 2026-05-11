@@ -1,7 +1,20 @@
+# Neo4j database connection and graph query functions for the Conference Management Application.
+# Handles attendee relationship and graph-based conference data operations using Cypher queries.
+#
+# References:
+# Neo4j Python Driver Documentation: https://neo4j.com/docs/python-manual/current/
+# Cypher Query Language Documentation: https://neo4j.com/docs/cypher-manual/current/
+#
+# Development Note:
+# Core functionality and error handling was developed with reference to lecture materials.
+# Troubleshooting and debugging support was assisted using OpenAI ChatGPT.
+
 from neo4j import GraphDatabase
 
 driver = None
 
+# Neo4j database connection approach was adapted from the lecture 11 materials
+# The connection is established when needed and closed at the end of the program
 def connect():
     global driver
     uri = "neo4j://localhost:7687"

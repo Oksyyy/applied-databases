@@ -1,7 +1,20 @@
+# Database connection and query functions for the Conference Management Application.
+# Handles MySQL database operations including attendee, company, session, and room management.
+#
+# References:
+# PyMySQL Documentation: https://pymysql.readthedocs.io/en/latest/
+# MySQL Documentation: https://dev.mysql.com/doc/
+#
+# Development Note:
+# Core functionality and error handling was developed with reference to lecture materials.
+# Troubleshooting and debugging support was assisted using OpenAI ChatGPT.
+
 import pymysql
 
 conn = None
 
+# SQL database connection approach was adapted from the lecture 10 materials
+# The connection is established when needed and closed at the end of the program
 def connect():
     global conn
     conn = pymysql.connect(host="localhost",
@@ -30,7 +43,9 @@ def view_speakers_sessions(speaker_name):
     order by speakerName;"""
 
     with conn.cursor() as cursor:
-        cursor.execute(query,(f"%{speaker_name}%",))
+        # MySQL parameterised queries used to prevent SQL injection
+        # Resource: https://pymysql.readthedocs.io/en/latest/modules/cursors.html#pymysql.cursors.Cursor.execute
+        cursor.execute(query,(f"%{speaker_name}%",)) 
         results = cursor.fetchall()
         return results
 
@@ -43,6 +58,8 @@ def view_attendees_by_company(company_id):
     query1 = """select companyName 
     from company where companyID = %s;"""
 
+    # Double %% used because PyMySQL interprets % as Python formatting characters
+    # MySQL documentation on date formatting: https://dev.mysql.com/doc/refman/8.0/en/date-and-time-functions.html#function_date-format
     query2 = """select a.attendeeName, DATE_FORMAT(a.attendeeDOB, '%%Y-%%c-%%e') as attendeeDOB, s.sessionTitle, s.speakerName, s.sessionDate, rm.roomName
     from attendee a
     join registration r on a.attendeeID = r.attendeeID

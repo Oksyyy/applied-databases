@@ -1,3 +1,10 @@
+# Main file for the Conference Management Application.
+# Provides a menu-driven interface for interacting with the SQL and Neo4j databases.
+#
+# Development Note:
+# Core functionality was developed with reference to lecture materials.
+# Troubleshooting and debugging support was assisted using OpenAI ChatGPT.
+
 import db_connect
 import neo4j_connect
 
