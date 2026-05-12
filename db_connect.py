@@ -184,3 +184,70 @@ def view_rooms():
         cursor.execute(query)
         results = cursor.fetchall()
         return results
+    
+def view_top_sessions():
+    global conn
+
+    if conn is None:
+        connect()
+    query = """select s.sessionTitle, s.speakerName, count(r.attendeeID) as attendeeCount
+    from session s
+    left join registration r on s.sessionID = r.sessionID
+    group by s.sessionTitle, s.speakerName
+    order by attendeeCount desc
+    limit 3;"""
+
+    with conn.cursor() as cursor:
+        cursor.execute(query)
+        results = cursor.fetchall()
+        return results
+
+def view_avg_attendees_per_session():
+    global conn
+
+    if conn is None:
+        connect()
+    # Subquery is used to count the number of attendees registered for each session
+    # The outer query then calculates the average across all sessions
+    query = """select round(avg(attendeeCount)) as avgAttendees from (
+    select s.sessionID, count(r.attendeeID) as attendeeCount
+    from session s
+    left join registration r on s.sessionID = r.sessionID
+    group by s.sessionID) as sessionAttendeeCounts;"""
+
+    with conn.cursor() as cursor:
+        cursor.execute(query)
+        results = cursor.fetchone()
+        return results
+    
+def view_gender_distribution():
+    global conn
+
+    if conn is None:
+        connect()
+        
+    query = """select attendeeGender, count(attendeeID) as count, round(count(attendeeID) / (select count(*) from attendee) * 100, 2) as percentage
+    from attendee
+    group by attendeeGender;"""
+
+    with conn.cursor() as cursor:
+        cursor.execute(query)
+        results = cursor.fetchall()
+        return results
+
+def view_attendees_per_company():
+    global conn
+
+    if conn is None:
+        connect()
+        
+    query = """select c.companyName, count(a.attendeeID) as attendeeCount
+    from company c
+    left join attendee a on a.attendeeCompanyID = c.companyID
+    group by c.companyName
+    order by attendeeCount desc;"""
+
+    with conn.cursor() as cursor:
+        cursor.execute(query)
+        results = cursor.fetchall()
+        return results

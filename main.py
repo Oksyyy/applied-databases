@@ -28,6 +28,7 @@ def main():
         print("4 - View Connected Attendees")
         print("5 - Add Attendee Connection")
         print("6 - View Rooms")
+        print("7 - View Conference Analytics")
         print("x - Exit application")
         
         # Prompt a user to enter their selected choice
@@ -129,8 +130,16 @@ def main():
 
         elif choice == '5':
             while True:
-                attendee_id_1 = input("\nEnter Attendee 1 ID : ")
-                attendee_id_2 = input("Enter Attendee 2 ID : ")
+                attendee_id_1 = input("\nEnter Attendee 1 ID (or x to cancel): ")
+                if attendee_id_1.lower() == 'x':
+                    break
+
+                attendee_id_2 = input("Enter Attendee 2 ID (or x to cancel): ")
+                if attendee_id_2.lower() == 'x':
+                    break
+
+                #attendee_id_1 = input("\nEnter Attendee 1 ID : ")
+                #attendee_id_2 = input("Enter Attendee 2 ID : ")
                 # Validate attendee ID inputs are integers
                 try:
                     attendee_id_1 = int(attendee_id_1)
@@ -176,9 +185,65 @@ def main():
             print("RoomID | Room Name | Capacity")
             for room in rooms:
                 print(f"{room['roomID']} | {room['roomName']} | {room['capacity']}")
+        
+        elif choice == '7':
+            analytics_choice = ""
+            
+            while analytics_choice != '5':
+                print("\nAvailable Conference Analytics")
+                print("-----------------------------")
+                print("1 - Top 3 most popular sessions")
+                print("2 - Average number of attendees per session")
+                print("3 - Gender distribution of attendees")
+                print("4 - Number of attendees per company")
+                print("5 - Back to main menu")
+                
+                analytics_choice = input("Choice: ")
+                
+                if analytics_choice == '1':
+                    analytics = db_connect.view_top_sessions()
+                    print("\nTop 3 Most Popular Sessions")
+                    print("\nSession Title | Speaker Name | Attendee Count")
+                    print("---------------------------------------------")
+                    if not analytics:
+                        print("No session data found.")
+                    else:
+                        for x in analytics:
+                            print(f"{x['sessionTitle']} | {x['speakerName']} | {x['attendeeCount']}")
+
+                elif analytics_choice == '2':
+                    analytics = db_connect.view_avg_attendees_per_session()
+                    if analytics['avgAttendees'] is None:
+                        print("\nNo attendee data found.")
+                    else:
+                        print(f"\nAverage Attendees Per Session (rounded to a whole number): {analytics['avgAttendees']}")
+
+                elif analytics_choice == '3':
+                    analytics = db_connect.view_gender_distribution()
+                    print("\nGender Distribution of Attendees")
+                    print("\nGender | Count | Percentage")
+                    print("----------------------------")
+                    if not analytics:
+                        print("No attendee gender data found.")
+                    else:
+                        for x in analytics:
+                            print(f"{x['attendeeGender']} | {x['count']} | {x['percentage']}%")
+                
+                elif analytics_choice == '4':
+                    analytics = db_connect.view_attendees_per_company()
+                    print("\nNumber of Attendees Per Company")
+                    print("---------------------------------")
+                    if not analytics:
+                        print("No company attendee data found.")
+                    else:
+                        for x in analytics:
+                            print(f"{x['companyName']} | {x['attendeeCount']}")
+                
+                elif analytics_choice != '5':
+                    print("Please select either 1, 2, 3, 4, or 5")
 
         elif choice != 'x':
-            print("Please select either 1, 2, 3, 4, 5, or 6")
+            print("Please select either 1, 2, 3, 4, 5, 6, 7, or x")
 
     db_connect.close_connection()
     neo4j_connect.close_connection()
